@@ -61,38 +61,51 @@ async function fetchAndSendAllPrices() {
 
 		const skins = require('./skins.js')
 		const fetchedSkinList = []
+
+		let totalProfit = 0
+		let totalLoss = 0
+
 		for (const skin of skins) {
 			const data = await steamMarket.getItemHistogram({
 				item_nameid: skin.nameid
 			})
-			const singleDiff = Math.abs(data.lowest_sell_order / 100 - skin.bought).toFixed(2)
-			const totalDiff = Math.abs((data.lowest_sell_order / 100 - skin.bought) * skin.amount).toFixed(2)
+			const singleDiff = Math.abs(data.lowest_sell_order / 100 - skin.bought)
+			const totalDiff = (data.lowest_sell_order / 100 - skin.bought) * skin.amount
+			if (totalDiff > 0) {
+				totalProfit += totalDiff
+			} else {
+				totalLoss += totalDiff
+			}
 			const percentage = (data.lowest_sell_order / 100 / skin.bought * 100).toFixed(0)
 			const prefix = (data.lowest_sell_order / 100 - skin.bought) > 0 ? '+' : '-'
 			fetchedSkinList.push({
 				name: skin.name,
-				value: `$${skin.bought} * ${skin.amount} now **$${data.lowest_sell_order / 100}**\`\`\`diff\n${prefix}$${singleDiff} Single | ${prefix}$${totalDiff} Total | ${percentage}%\n\`\`\``
+				value: `$${skin.bought} * ${skin.amount} now **$${data.lowest_sell_order / 100}**\`\`\`diff\n${prefix}$${singleDiff.toFixed(2)} Single | ${prefix}$${Math.abs(totalDiff.toFixed(2))} Total | ${percentage}%\n\`\`\``
 			})
 		}
 
-		client.users.fetch(process.env.USER).then(u => {
+		client.users.fetch(process.env.USERID).then(u => {
 			u.send({
 				embeds: [new EmbedBuilder()
 					.addFields(fetchedSkinList)
+					.addFields({
+						name: 'Total',
+						value: `$${totalProfit.toFixed(2)} - $${totalLoss.toFixed(2)} = **$${(totalProfit - totalLoss).toFixed(2)}**`
+					})
 					.setTimestamp(new Date())
 				]
 			})
 		})
 	} catch (e) {
 		console.log(e)
-		client.users.fetch(process.env.USER).then(u => {
+		client.users.fetch(process.env.USERID).then(u => {
 			u.send('Cant send skins rn its borken ¯\\_(ツ)_/¯\n```' + e.message + '```')
 		})
 
 	}
 }
 
-cron.schedule(process.env.CRONJOB, () => {fetchAndSendAllPrices()})
+cron.schedule(process.env.CRONJOB, () => { fetchAndSendAllPrices() })
 
 
 client.login(process.env.TOKEN);
