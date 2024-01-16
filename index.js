@@ -74,7 +74,7 @@ async function fetchAndSendAllPrices() {
 			if (totalDiff > 0) {
 				totalProfit += totalDiff
 			} else {
-				totalLoss += totalDiff
+				totalLoss -= totalDiff
 			}
 			const percentage = (data.lowest_sell_order / 100 / skin.bought * 100).toFixed(0)
 			const prefix = (data.lowest_sell_order / 100 - skin.bought) > 0 ? '+' : '-'
