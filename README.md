@@ -10,6 +10,8 @@
 
 > **NOTE:** Steam market has a heavy rate limit for the API, so you should keep the amount of skins under 10.
 
+3.1 I made a oopsie and can't be bothered to fix it. You need to create a `commands` folder for it to run.
+
 4. Run `npm i` then run `npm run start` to start the bot.
 
 ## Usage
